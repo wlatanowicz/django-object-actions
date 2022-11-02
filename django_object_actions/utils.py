@@ -159,6 +159,7 @@ class BaseDjangoObjectActions(object):
             label=getattr(tool, "label", tool_name.replace("_", " ").capitalize()),
             standard_attrs=standard_attrs,
             custom_attrs=custom_attrs,
+            params=getattr(tool, "params", {})
         )
 
     def _get_button_attrs(self, tool):
@@ -238,7 +239,7 @@ class BaseActionView(View):
         """
         raise NotImplementedError
 
-    def get(self, request, tool, **kwargs):
+    def post(self, request, tool, **kwargs):
         # Fix for case if there are special symbols in object pk
         for k, v in self.kwargs.items():
             self.kwargs[k] = unquote(v)
@@ -253,9 +254,6 @@ class BaseActionView(View):
             return ret
 
         return HttpResponseRedirect(self.back_url)
-
-    # HACK to allow POST requests too
-    post = get
 
     def message_user(self, request, message):
         """
