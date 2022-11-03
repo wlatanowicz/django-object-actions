@@ -7,6 +7,15 @@ from django.urls import reverse
 from django_object_actions import DjangoObjectActions, takes_instance_or_queryset
 
 from .models import Choice, Poll, Comment, RelatedData
+from django import forms
+
+
+class ResetAllForm(forms.Form):
+    new_value = forms.IntegerField(initial=0)
+
+
+class IncrementForm(forms.Form):
+    increment_by = forms.IntegerField(initial=1)
 
 
 class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
@@ -27,17 +36,7 @@ class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
         "Robert": '"); DROP TABLE Students; ',  # 327
         "class": "addlink",
     }
-    increment_vote.params = {
-        "increment_by": {
-            "label": "Increment by",
-            "type": "number",
-            "default": "1",
-        },
-        "start_date": {
-            "label": "Start date",
-            "type": "date",
-        },
-    }
+    increment_vote.form = IncrementForm
 
     actions = ["increment_vote"]
 
@@ -61,15 +60,11 @@ class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
         self.message_user(request, "just kidding!")
 
     def reset_all(self, request, queryset):
-        self.message_user(request, f"just kidding! reset to {request.POST['new_value']}")
+        self.message_user(
+            request, f"resetting all to {request.POST['new_value']}. just kidding!"
+        )
 
-    reset_all.params = {
-        "new_value": {
-            "label": "New value",
-            "type": "number",
-            "default": "0",
-        },
-    }
+    reset_all.form = ResetAllForm()
 
     def reset_vote(self, request, obj):
         obj.votes = 0
@@ -91,7 +86,10 @@ class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
         "edit_poll",
         "raise_key_error",
     )
-    changelist_actions = ("delete_all", "reset_all",)
+    changelist_actions = (
+        "delete_all",
+        "reset_all",
+    )
 
 
 admin.site.register(Choice, ChoiceAdmin)

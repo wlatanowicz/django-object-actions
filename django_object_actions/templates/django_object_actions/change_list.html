@@ -9,7 +9,7 @@
 
 {% block object-tools-items %}
   {% for tool in objectactions %}
-    {% if not tool.params %}
+    {% if not tool.form %}
       <li class="objectaction-item" data-tool-name="{{ tool.name }}">
         {% url tools_view_name tool=tool.name as action_url %}
         <form name="{{ tool.name }}__form" method="post" action="{% add_preserved_filters action_url %}">
@@ -31,18 +31,13 @@
 {% block object-tools %}
   {{ block.super }}
   {% for tool in objectactions %}
-    {% if tool.params %}
+    {% if tool.form %}
         {% url tools_view_name tool=tool.name as action_url %}
         <div class="clear">
           <form name="{{ tool.name }}__form" method="post" action="{% add_preserved_filters action_url %}">
             {% csrf_token %}
             <ul class="object-tools django-object-actions">
-              {% for name, config in tool.params.items %}
-                <li class="objectaction-item" data-param-name="{{ name }}">
-                  <label for="{{ name }}">{{ config.label }}:</label>
-                  <input name="{{ name }}" type="{{ config.type |default:'text' }}" value="{{ config.default }}"/>
-                </li>
-              {% endfor %}
+              {{ tool.form.as_ul }}
               <li class="objectaction-item" data-tool-name="{{ tool.name }}">
                 <a href="javascript:window.document.forms['{{ tool.name }}__form'].submit()" title="{{ tool.standard_attrs.title }}"
                   {% for k, v in tool.custom_attrs.items %}
