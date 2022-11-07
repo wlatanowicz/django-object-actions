@@ -101,6 +101,16 @@ class ChangeTests(LoggedInTestCase):
         response = self.client.get(admin_change_url)
         self.assertNotIn(action_url, response.rendered_content)
 
+    def test_changelist_get_method_action_view(self):
+        url = "/admin/polls/choice/actions/delete_all/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_changelist_get_method_nonexistent_action(self):
+        url = "/admin/polls/choice/actions/xyzzy/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
 
 class ChangeListTests(LoggedInTestCase):
     def test_changelist_template_context(self):
