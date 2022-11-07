@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+### Feature
+* Drop support for GET method. All action are now invoked with POST method.
+
+### Breaking
+* When dealing with a secondary form in action, you cannot simply check the http method to determine if the form should be rendered or processed. You need to check for specific form inputs in POST payload.
+
 ## v4.0.0 (2022-03-12)
 ### Feature
 * Drop Python 3.6 support ([#135](https://github.com/crccheck/django-object-actions/issues/135)) ([`8deebed`](https://github.com/crccheck/django-object-actions/commit/8deebedda55d0e5d466969c7f27a9c60e680e5e8))

@@ -104,7 +104,7 @@ class PollAdmin(DjangoObjectActions, admin.ModelAdmin):
     def delete_all_choices(self, request, obj):
         from django.shortcuts import render
 
-        if request.method == "POST":
+        if "sure" in request.POST:
             obj.choice_set.all().delete()
             return
 
