@@ -22,13 +22,12 @@ our templates.
 In your admin.py:
 
 ```python
-from django_object_actions import DjangoObjectActions
+from django_object_actions import DjangoObjectActions, action
 
 class ArticleAdmin(DjangoObjectActions, admin.ModelAdmin):
+    @action(label="Publish", description="Submit this article") # optional
     def publish_this(self, request, obj):
         publish_obj(obj)
-    publish_this.label = "Publish"  # optional
-    publish_this.short_description = "Submit this article"  # optional
 
     change_actions = ('publish_this', )
 ```
@@ -49,10 +48,12 @@ views too. There, you'll get a queryset like a regular [admin action][admin acti
 from django_object_actions import DjangoObjectActions
 
 class MyModelAdmin(DjangoObjectActions, admin.ModelAdmin):
+    @action(
+        label="This will be the label of the button",  # optional
+        description="This will be the tooltip of the button" # optional
+    )
     def toolfunc(self, request, obj):
         pass
-    toolfunc.label = "This will be the label of the button"  # optional
-    toolfunc.short_description = "This will be the tooltip of the button"  # optional
 
     def make_published(modeladmin, request, queryset):
         queryset.update(status='p')
@@ -93,8 +94,18 @@ class RobotAdmin(DjangoObjectActions, admin.ModelAdmin):
 
 ### Customizing *Object Actions*
 
-To give the action some a helpful title tooltip, add a
-`short_description` attribute, similar to how admin actions work:
+To give the action some a helpful title tooltip, you can use the `action` decorator
+and set the description argument.
+
+```python
+@action(description="Increment the vote count by one")
+def increment_vote(self, request, obj):
+    obj.votes = obj.votes + 1
+    obj.save()
+```
+
+Alternatively, you can also add a `short_description` attribute,
+similar to how admin actions work:
 
 ```python
 def increment_vote(self, request, obj):
@@ -106,6 +117,15 @@ increment_vote.short_description = "Increment the vote count by one"
 By default, Django Object Actions will guess what to label the button
 based on the name of the function. You can override this with a `label`
 attribute:
+
+```python
+@action(label="Vote++")
+def increment_vote(self, request, obj):
+    obj.votes = obj.votes + 1
+    obj.save()
+```
+
+or
 
 ```python
 def increment_vote(self, request, obj):
@@ -120,6 +140,15 @@ by adding a Django widget style
 attribute:
 
 ```python
+@action(attrs = {'class': 'addlink'})
+def increment_vote(self, request, obj):
+    obj.votes = obj.votes + 1
+    obj.save()
+```
+
+or
+
+```python
 def increment_vote(self, request, obj):
     obj.votes = obj.votes + 1
     obj.save()
@@ -127,6 +156,25 @@ increment_vote.attrs = {
     'class': 'addlink',
 }
 ```
+
+## Adding inline forms
+
+You can add parameters to the action button by adding Django [Form](https://docs.djangoproject.com/en/4.1/ref/forms/api/#django.forms.Form) object to it. Parameter values can be read form request's `POST` property.
+
+```python
+from django import forms
+
+class ResetAllForm(forms.Form):
+    new_value = forms.IntegerField(initial=0)
+
+def reset_all(self, request, queryset):
+    new_value = int(request.POST["new_value"])
+    queryset.update(value=new_value)
+reset_all.form = ResetAllForm()
+```
+
+Each action with form assigned is rendered in it's own, separate row.
+
 
 ### Programmatically Disabling Actions
 

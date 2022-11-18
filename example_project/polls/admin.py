@@ -4,9 +4,22 @@ from django.db.models import F
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-from django_object_actions import DjangoObjectActions, takes_instance_or_queryset
+from django_object_actions import (
+    DjangoObjectActions,
+    takes_instance_or_queryset,
+    action,
+)
 
 from .models import Choice, Poll, Comment, RelatedData
+from django import forms
+
+
+class ResetAllForm(forms.Form):
+    new_value = forms.IntegerField(initial=0)
+
+
+class ChangeVotesForm(forms.Form):
+    change_by = forms.IntegerField(initial=1)
 
 
 class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
@@ -15,37 +28,48 @@ class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
     # Actions
     #########
 
+    @action(form=ChangeVotesForm)
+    def change_votes(self, request, obj):
+        change_by = int(request.POST["change_by"])
+        obj.votes += change_by
+        obj.save()
+
+    @action(
+        description="+1",
+        label="vote++",
+        attrs={
+            "test": '"foo&bar"',
+            "Robert": '"); DROP TABLE Students; ',  # 327
+            "class": "addlink",
+        },
+    )
     @takes_instance_or_queryset
     def increment_vote(self, request, queryset):
         queryset.update(votes=F("votes") + 1)
-
-    increment_vote.short_description = "+1"
-    increment_vote.label = "vote++"
-    increment_vote.attrs = {
-        "test": '"foo&bar"',
-        "Robert": '"); DROP TABLE Students; ',  # 327
-        "class": "addlink",
-    }
 
     actions = ["increment_vote"]
 
     # Object actions
     ################
 
+    @action(description="-1")
     def decrement_vote(self, request, obj):
         obj.votes -= 1
         obj.save()
 
-    decrement_vote.short_description = "-1"
-
     def delete_all(self, request, queryset):
         self.message_user(request, "just kidding!")
 
+    @action(form=ResetAllForm())
+    def reset_all(self, request, queryset):
+        self.message_user(
+            request, f"resetting all to {request.POST['new_value']}. just kidding!"
+        )
+
+    @action(description="0")
     def reset_vote(self, request, obj):
         obj.votes = 0
         obj.save()
-
-    reset_vote.short_description = "0"
 
     def edit_poll(self, request, obj):
         url = reverse("admin:polls_poll_change", args=(obj.poll.pk,))
@@ -57,11 +81,15 @@ class ChoiceAdmin(DjangoObjectActions, admin.ModelAdmin):
     change_actions = (
         "increment_vote",
         "decrement_vote",
+        "change_votes",
         "reset_vote",
         "edit_poll",
         "raise_key_error",
     )
-    changelist_actions = ("delete_all",)
+    changelist_actions = (
+        "delete_all",
+        "reset_all",
+    )
 
 
 admin.site.register(Choice, ChoiceAdmin)
@@ -101,17 +129,16 @@ class PollAdmin(DjangoObjectActions, admin.ModelAdmin):
     # Object actions
     ################
 
+    @action(label="Delete All Choices")
     def delete_all_choices(self, request, obj):
         from django.shortcuts import render
 
-        if request.method == "POST":
+        if "sure" in request.POST:
             obj.choice_set.all().delete()
             return
 
         self.message_user(request, "All choices deleted")
         return render(request, "clear_choices.html", {"object": obj})
-
-    delete_all_choices.label = "Delete All Choices"
 
     def question_mark(self, request, obj):
         """Add a question mark."""

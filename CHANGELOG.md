@@ -1,6 +1,19 @@
 # Changelog
 
 <!--next-version-placeholder-->
+### Feature
+* Drop support for GET method. All action are now invoked with POST method.
+* Add option to include inline forms with actions.
+
+### Breaking
+* When dealing with a secondary form in action, you cannot simply check the http method to determine if the form should be rendered or processed. You need to check for specific form inputs in POST payload.
+
+## v4.1.0 (2022-11-14)
+### Feature
+* Provide action decorator to pass label, description and atts to the admin method ([#141](https://github.com/crccheck/django-object-actions/issues/141)) ([`5638f99`](https://github.com/crccheck/django-object-actions/commit/5638f999d32ea7f6de60b895d23ce89624120769))
+
+### Fix
+* Fix link to ci.yml in README ([#139](https://github.com/crccheck/django-object-actions/issues/139)) ([`700dd9b`](https://github.com/crccheck/django-object-actions/commit/700dd9b848aea67c759dca61cd815a27b6b16fd1))
 
 ## v4.0.0 (2022-03-12)
 ### Feature
