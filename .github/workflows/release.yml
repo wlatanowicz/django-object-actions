@@ -18,5 +18,5 @@ jobs:
         # https://github.com/relekang/python-semantic-release/releases
         uses: relekang/python-semantic-release@v7.32.2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          github_token: ${{ secrets.GH_API_TOKEN }}
+          pypi_token: ${{ secrets.PYPI_API_TOKEN }}
